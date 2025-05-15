@@ -53,7 +53,8 @@ GCP_RECOGNITION_CONFIG = speech.RecognitionConfig(
     sample_rate_hertz=SAMPLERATE,
     language_code="he-IL",
     enable_word_time_offsets=True,
-    # Consider model="telephony" or "latest_long" for different accuracy/latency trade-offs
+    # model="latest_long",  # Removed: Not supported for he-IL / iw-IL
+    enable_automatic_punctuation=True  # Keep: Generally beneficial
 )
 GCP_STREAMING_CONFIG = speech.StreamingRecognitionConfig(
     config=GCP_RECOGNITION_CONFIG,
@@ -142,7 +143,7 @@ def postprocess_hebrew_with_gpt(text_to_correct):
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "אתה מערכת לתיקוני שגיאות עבור כתוביות בשידורי חדשות בשידור חי, הכתוביות הן תמלול של הצהרות ונאומים יש לתקן טעויות בעברית, להוסיף ניקוד ופיסוק אם נדרש ובעיקר לשמור על הניסוח המקורי ללא שינויים בטקסט, רק תיקונים.\nיש לשים לב וחשיבות גדולה לשמות של אישים או גופים ממשלתיים או ביטחוניים שאנמרים בטקסט"},
+                {"role": "system", "content": "אתה מערכת לתיקוני שגיאות עבור כתוביות בשידורי חדשות בשידור חי, הכתוביות הן תמלול של הצהרות ונאומים יש לתקן טעויות בעברית, להוסיף ניקוד ופיסוק אם נדרש ובעיקר לשמור על הניסוח המקורי ללא שינויים בטקסט, רק תיקונים. חשוב ביותר: מספר המילים בפלט המתוקן חייב להיות זהה לחלוטין למספר המילים בקלט המקורי. אין להוסיף, למחוק או למזג מילים. תקן כל מילה במקומה."},
                 {"role": "user", "content": f"Please correct the following Hebrew text: \n{text_to_correct}"}
             ],
             temperature=0.2 # Lower temperature for more deterministic corrections
